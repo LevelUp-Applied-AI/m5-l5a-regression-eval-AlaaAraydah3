@@ -9,12 +9,15 @@ Run: python lab_regression.py
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
 from sklearn.linear_model import LogisticRegression, Ridge, Lasso
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import (classification_report, confusion_matrix,
-                             mean_absolute_error, r2_score)
+from sklearn.metrics import (ConfusionMatrixDisplay, accuracy_score,
+                             classification_report, f1_score, mean_absolute_error,
+                             precision_score, recall_score, r2_score)
+ 
 
 
 def load_data(filepath="data/telecom_churn.csv"):
@@ -67,9 +70,9 @@ def split_data(df, target_col, test_size=0.2, random_state=42):
 
     if stratify is not None:
         print("\nTrain churn distribution:")
-        print(y_train.value_counts)
+        print(y_train.value_counts())
         print("\nTest churn distribution:")
-        print(y_test.value_counts)
+        print(y_test.value_counts())
     else:
         print("\nStratification was not applied because the target variable is not categorical or has too few samples per group.")
 
@@ -122,12 +125,21 @@ def evaluate_classifier(pipeline, X_train, X_test, y_train, y_test):
     # TODO: Fit the pipeline on training data, predict on test, compute metrics
     pipeline.fit(X_train, y_train)
     y_pred = pipeline.predict(X_test)
-    report = classification_report(y_test, y_pred, output_dict=True)
+
+    # Print the full classification report
+    print("\nClassification Report:")
+    print(classification_report(y_test, y_pred))
+
+    # Display confusion matrix
+    ConfusionMatrixDisplay.from_predictions(y_test, y_pred, cmap='Blues')
+    plt.title('Confusion Matrix')
+    plt.show()
+
     return {
-        'accuracy': report['accuracy'],
-        'precision': report['weighted avg']['precision'],
-        'recall': report['weighted avg']['recall'],
-        'f1': report['weighted avg']['f1-score']
+        'accuracy': accuracy_score(y_test, y_pred),
+        'precision': precision_score(y_test, y_pred, zero_division=0),
+        'recall': recall_score(y_test, y_pred, zero_division=0),
+        'f1': f1_score(y_test, y_pred, zero_division=0)
     }
 
 
